@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>html{color-scheme:light}body{margin:0;font:14px system-ui,sans-serif}[hidden]{display:none!important}</style>
+<title>Cartographie Valence-Romans</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700;800&display=swap">
+<style>
+/* Concept : un tableau de bord de lecture (couvertures), une carte de relations, un atelier de données. Marine et jaune Fonda, Raleway. */
+:root{
+  --font:'Raleway',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --bg:#F5F6FB; --surface:#FFFFFF; --fg:#141B34; --muted:#5A6384; --line:#DADFEE;
+  --navy:#213A8E; --on-navy:#FFFFFF; --yellow:#F7B82E; --on-yellow:#2A1F00;
+  --d1:#E4E9F8; --d2:#B7C4EA; --d3:#3F5DB8; --on-d3:#FFFFFF;
+  --warn:#B4540A; --focus:#F7B82E;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1322; --surface:#161D35; --fg:#E8EBF7; --muted:#9AA3C6; --line:#29325A;
+  --navy:#8CA3F2; --on-navy:#0E1322; --d1:#1D2850; --d2:#2D4090; --d3:#4A66D0; --on-d3:#FFFFFF; --warn:#F0A060; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1322; --surface:#161D35; --fg:#E8EBF7; --muted:#9AA3C6; --line:#29325A;
+  --navy:#8CA3F2; --on-navy:#0E1322; --d1:#1D2850; --d2:#2D4090; --d3:#4A66D0; --on-d3:#FFFFFF; --warn:#F0A060; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.5;
+  padding-block:20px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1280px;margin:0 auto}
+h1{font-size:clamp(22px,3.2vw,30px);font-weight:800;line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:16px;font-weight:700;margin:0 0 8px}
+h3{font-size:13px;font-weight:700;margin:0 0 6px}
+.sub{color:var(--muted);margin:6px 0 0;max-width:70ch}
+.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;border-bottom:3px solid var(--yellow);padding-bottom:14px}
+.kpis{display:flex;flex-wrap:wrap;gap:22px;margin:16px 0 4px}
+.kpi b{display:block;font-size:24px;font-weight:800;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi span{font-size:12px;color:var(--muted)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:4px;margin:18px 0 14px}
+button,select,input,textarea{font:inherit;color:inherit}
+.tab{border:1px solid var(--line);background:var(--surface);padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:600}
+.tab[aria-selected="true"]{background:var(--navy);color:var(--on-navy);border-color:var(--navy)}
+.btn{border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--navy)}
+.btn.pri{background:var(--yellow);color:var(--on-yellow);border-color:var(--yellow)}
+.btn.sm{padding:3px 9px;font-size:12px}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:6px 12px;cursor:pointer;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--on-navy)}
+.note{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--yellow);padding:10px 14px;border-radius:4px;color:var(--muted);max-width:90ch}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+table.m{border-collapse:collapse;width:100%;min-width:900px}
+table.m th,table.m td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:6px;vertical-align:top;text-align:left}
+table.m th:last-child,table.m td:last-child{border-right:0}
+table.m thead th{background:var(--navy);color:var(--on-navy);font-size:12px;font-weight:700;position:sticky;top:0}
+table.m thead th small{display:block;font-weight:500;opacity:.85}
+table.m tbody th{font-size:12.5px;font-weight:700;width:190px;background:var(--surface)}
+td.c{min-width:130px;height:56px}
+td.c.e0{background:repeating-linear-gradient(135deg,transparent 0 6px,var(--d1) 6px 7px)}
+td.c.e1{background:var(--d1)} td.c.e2{background:var(--d2)} td.c.e3{background:var(--d3);color:var(--on-d3)}
+.cnt{font-weight:800;font-size:15px;font-variant-numeric:tabular-nums;margin-right:6px}
+.chips{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px}
+.chip{border:1px solid var(--navy);background:var(--surface);color:var(--fg);border-radius:4px;padding:1px 6px;font-size:11px;cursor:pointer;text-align:left;line-height:1.35}
+.chip.inc{border-style:dashed}
+.chip.rel{opacity:.65;background:repeating-linear-gradient(135deg,var(--surface) 0 4px,var(--d1) 4px 5px)}
+.chip.dim{opacity:.18}
+.chip.sel{outline:2px solid var(--yellow)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px;align-items:start}
+@media(max-width:980px){.layout{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:14px;position:sticky;top:8px;max-height:80vh;overflow:auto}
+.panel p{margin:4px 0}
+.dbar{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:5;margin-top:12px;background:var(--surface);border:1px solid var(--navy);border-radius:6px;padding:10px 14px;box-shadow:0 4px 18px rgba(20,27,52,.18)}
+.gantt{display:grid;grid-template-columns:200px repeat(6,minmax(110px,1fr));min-width:900px}
+.gantt>*{border-bottom:1px solid var(--line)}
+.gh{background:var(--navy);color:var(--on-navy);padding:8px;font-size:12px;font-weight:700;border-right:1px solid var(--navy)}
+.gh small{display:block;font-weight:500;opacity:.85}
+.gname{text-align:left;background:var(--surface);border:0;border-right:1px solid var(--line);padding:9px 10px;font-weight:700;font-size:12.5px;cursor:pointer;color:var(--fg);display:flex;align-items:center}
+.gname.sel{box-shadow:inset 4px 0 0 var(--yellow);background:var(--d1)}
+.gcell{background:var(--surface);border:0;border-right:1px solid var(--line);padding:7px 0;display:flex;cursor:pointer}
+.gbar{flex:1;height:26px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;background:var(--d3);color:var(--on-d3)}
+.gbar.nd{background:var(--d1);color:var(--muted);border-top:1px dashed var(--d3);border-bottom:1px dashed var(--d3)}
+.gbar.ls{border-radius:13px 0 0 13px;margin-left:6px}
+.gbar.rs{border-radius:0 13px 13px 0;margin-right:6px}
+.lg1{background:var(--d3)}.lg2{background:var(--d1);border:1px dashed var(--d3)}
+.dbar{max-height:32vh;overflow:auto}
+.dbar .blk h3{display:block;margin:8px 0 4px}.dbar .blk p{display:block;margin:4px 0}
+.dbar h3{display:inline;margin-right:10px}
+.dbar p{display:inline;margin:0 8px 0 0}
+.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:3px;border:1px solid var(--line);color:var(--muted);margin-right:4px}
+.tag.w{border-color:var(--warn);color:var(--warn)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin:10px 0}
+.legend i{display:inline-block;width:14px;height:14px;vertical-align:-3px;margin-right:4px;border:1px solid var(--line)}
+.sq{display:inline-block;min-width:22px;text-align:center;border-radius:3px;font-weight:700;font-size:12px;padding:1px 4px}
+.tick{background:var(--d3);color:var(--on-d3)}
+.hollow{border:1px dashed var(--d3);color:var(--muted)}
+.warnsq{border:1px solid var(--warn);color:var(--warn)}
+#netwrap{overflow-x:auto}
+svg#net{min-width:720px;width:100%;height:auto;aspect-ratio:1000/680;background:var(--surface);border:1px solid var(--line);border-radius:6px;display:block;touch-action:none}
+.node{cursor:pointer}
+.node text{font-size:11.5px;font-family:var(--font);fill:var(--fg);paint-order:stroke;stroke:var(--surface);stroke-width:3px}
+.link{stroke:var(--muted);stroke-opacity:.35}
+.link.rec{stroke:var(--navy);stroke-opacity:.7}
+.dimmed{opacity:.12}
+.empty{padding:40px 16px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:6px;background:var(--surface)}
+/* edit */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.card{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+label.f{display:flex;flex-direction:column;gap:2px;font-size:11.5px;font-weight:600;color:var(--muted)}
+.card input[type=text],.card textarea,.card select,.dt input[type=text],.dt select,.dt textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:4px;padding:5px 7px;min-width:0;font-weight:500;color:var(--fg)}
+.card textarea{min-height:90px;resize:vertical}
+.chk{display:flex;flex-wrap:wrap;gap:4px}
+.chk label{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-size:12px;cursor:pointer}
+.chk label:has(input:checked){background:var(--d3);color:var(--on-d3);border-color:var(--d3)}
+.chk input{margin:0}
+.dt{border-collapse:collapse;min-width:1000px;width:100%}
+.dt th,.dt td{border-bottom:1px solid var(--line);padding:6px;vertical-align:top;text-align:left;font-size:12.5px}
+.dt th{font-size:11.5px;color:var(--muted)}
+.dt textarea{min-height:44px;resize:vertical}
+.sec{margin:26px 0 8px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.warnbar{background:var(--surface);border:1px solid var(--warn);color:var(--warn);padding:8px 12px;border-radius:6px;margin:8px 0}
+.ro{color:var(--muted);font-size:12px}
+@media(prefers-reduced-motion:no-preference){.chip,.btn,.tab{transition:border-color .15s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1 id="ttl">Cartographie de l'accompagnement des jeunes</h1>
+      <p class="sub" id="sub">Valence-Romans, état des lieux déclaratif issu du séminaire du 3 novembre 2026</p>
+    </div>
+    <div class="bar" style="margin:0">
+      <button class="btn pri" id="imp-btn" hidden>Importer un fichier Excel</button>
+      <input type="file" id="imp-file" accept=".xlsx,.xlsm" hidden>
+      <button class="btn pri" id="pub-btn" hidden>Télécharger la page à jour</button>
+      <button class="btn" id="exp-csv" hidden>Exporter les dispositifs (CSV)</button>
+      <button class="btn" id="exp-json" hidden>Exporter tout (JSON)</button>
+    </div>
+  </header>
+  <div class="kpis" id="kpis"></div>
+  <div id="status"></div>
+  <nav class="tabs" role="tablist" aria-label="Vues">
+    <button class="tab" role="tab" data-v="couvertures">Carte des couvertures</button>
+    <button class="tab" role="tab" data-v="reseau">Carte des relations</button>
+    <button class="tab" role="tab" data-v="donnees">Données</button>
+  </nav>
+  <main id="main"></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script id="carto-data" type="application/json">{"structures": [{"nom": "Cellule Emploi Ville de Valence", "court": "Cellule Valence", "role": "Accompagnement à l'emploi, cas par cas", "etapes": [1, 2, 5], "liens": ["Mission locale Romans", "La Plateforme Emploi", "France Travail Valence", "PIJ Valence Romans Agglo", "SNC", "AFPA"], "ordre": 0, "id": "cellule-valence"}, {"nom": "DDETS de la Drôme", "court": "DDETS", "role": "Coordination des partenaires et financement d'actions et de dispositifs (Parrainage, IAE, EA)", "etapes": [1, 2, 3, 4, 5, 6], "liens": ["Proxité", "Cap Emploi"], "ordre": 1, "id": "ddets"}, {"nom": "100 Chances 100 Emplois", "court": "100C100E", "role": "Accompagnement vers l'emploi durable en mobilisant les entreprises et les acteurs de l'emploi, insertion et formation", "etapes": [4, 5, 6], "liens": ["La Plateforme Emploi", "Entreprises du territoire", "E2C", "Cellule Emploi Ville de Valence", "Mission locale Romans", "France Travail Valence"], "ordre": 2, "id": "100c100e"}, {"nom": "Solerys", "court": "Solerys", "role": "Accompagnement et placement vers l'emploi", "etapes": [2, 4, 5], "liens": ["Randstad Interaction", "France Travail Valence"], "ordre": 3, "id": "solerys"}, {"nom": "PIJ Valence Romans Agglo", "court": "PIJ", "role": "Accueil, diagnostic, accompagnement TRE, orientation vers les structures, interventions collectives dans les établissements", "etapes": [1, 2, 3, 4, 5], "liens": ["Mission locale Romans", "CCR", "Proxité", "AFEV", "Unicité", "MPT Ville de Valence", "Établissements scolaires"], "ordre": 4, "id": "pij"}, {"nom": "Campus Connecté Romans", "court": "Campus Connecté", "role": "Accueillir et accompagner des publics en formation post-bac à distance", "etapes": [1, 2, 3, 4, 5, 6], "liens": ["Proxité", "Mission locale Romans", "CIO", "CIO'Sup", "France Travail Valence", "La Plateforme Emploi", "PIJ Valence Romans Agglo", "MQ", "AFEV"], "ordre": 5, "id": "campus"}, {"nom": "La Plateforme Emploi", "court": "Plateforme Emploi", "role": "Recherche d'emploi", "etapes": [2, 5], "liens": ["Valence Romans Agglo", "France Travail Valence"], "ordre": 6, "id": "plateforme"}, {"nom": "France Travail Valence", "court": "France Travail", "role": "Accueil, diagnostic, recherche d'emploi, développement des compétences, levée des freins, indemnisation", "etapes": [2, 4, 5, 6], "liens": ["Mission locale Romans", "Cap Emploi", "Département 26", "E2C", "La Plateforme Emploi", "Cellule Emploi Ville de Valence"], "ordre": 7, "id": "ft"}, {"nom": "Lycée Algoud Laffemas", "court": "Lycée Algoud", "role": "Mise en relation avec les partenaires professionnels, réorientation, formation à l'insertion professionnelle", "etapes": [4, 5], "liens": ["La Plateforme Emploi", "France Travail Valence", "Mission locale Romans", "Valence Romans Agglo", "Entreprises du territoire", "CIO", "Structures de formation"], "ordre": 8, "id": "lycee"}, {"nom": "GRAFTON GiGroup", "court": "Grafton", "role": "Proposition de stage et d'immersion, intervention sur le dispositif 100C100E, permanence QPV Grenoble", "etapes": [5, 6], "liens": ["Les entreprises s'engagent", "VVMT", "Associations", "Établissements scolaires"], "ordre": 9, "id": "grafton"}, {"nom": "Ville de Romans-sur-Isère", "court": "Ville de Romans", "role": "Prévention spécialisée, mise en relation avec les partenaires, identification des freins périphériques, chantier jeunes", "etapes": [1, 2, 3, 4], "liens": ["Établissements scolaires", "Mission locale Romans", "France Travail Valence", "Addiction France", "Assistantes sociales", "La Plateforme Emploi"], "ordre": 10, "id": "romans"}, {"nom": "Mission locale Romans", "court": "Mission locale", "role": "Conseillère en insertion professionnelle et sociale", "etapes": [2, 4, 5, 6], "liens": ["Proxité", "PIJ Valence Romans Agglo", "CIO", "ADAPT", "La Plateforme Emploi", "Arches"], "ordre": 11, "id": "ml"}, {"nom": "Cellule emploi de BLV", "court": "Cellule BLV", "role": "Accueil, orientation vers les structures adaptées, conseils, mise en relation avec employeurs (jobs d'été)", "etapes": [2, 3, 5], "liens": ["Mission locale Romans", "PIJ Valence Romans Agglo", "SNC"], "ordre": 12, "id": "blv"}, {"nom": "Prévention spécialisée", "court": "Prév. spécialisée", "role": "Accompagnement des jeunes de 10 à 21 ans sur les QPV", "etapes": [1, 2, 3, 4, 5, 6], "liens": ["AFPA", "CFA Livron"], "ordre": 13, "id": "prev"}], "dispositifs": [{"structure": "cellule-valence", "nom": "Diagnostic, orientation, aide au CV, mise en relation", "etapes": [2, 5], "nature": "accompagnement", "desc": "Pas de dispositif porté, des actions au cas par cas.", "incertain": true, "relais": false, "ordre": 0, "id": "d01"}, {"structure": "ddets", "nom": "IAE, EA", "etapes": [6], "nature": "financement", "desc": "Financement des structures d'IAE et des EA du département, accompagnement et suivi.", "incertain": true, "relais": false, "ordre": 1, "id": "d02"}, {"structure": "ddets", "nom": "Parrainage", "etapes": [5, 6], "nature": "financement", "desc": "Subvention forfaitaire du dispositif Parrainage. Acteurs du territoire : missions locales et Proxité (Romans).", "incertain": true, "relais": false, "ordre": 2, "id": "d03"}, {"structure": "ddets", "nom": "O2R", "etapes": [1], "nature": "financement", "desc": "Financement de l'offre de repérage et de remobilisation qui permet l'aller-vers.", "incertain": true, "relais": false, "ordre": 3, "id": "d04"}, {"structure": "100c100e", "nom": "Job Reboost", "etapes": [4, 5, 6], "nature": "mentorat", "desc": "1 semaine de coaching intensive : projet pro, confiance en soi, simulation d'entretien, pitch, mentorat.", "incertain": false, "relais": false, "ordre": 4, "id": "d05"}, {"structure": "100c100e", "nom": "Impulsion", "etapes": [4, 5, 6], "nature": "mentorat", "desc": "Mentorat avec un collaborateur d'entreprise pendant 6 mois minimum.", "incertain": false, "relais": false, "ordre": 5, "id": "d06"}, {"structure": "solerys", "nom": "UES (un emploi stable)", "etapes": [2, 4, 5], "nature": "accompagnement", "desc": "Accompagnement vers l'emploi durable (3 à 5 mois).", "incertain": false, "relais": false, "ordre": 6, "id": "d07"}, {"structure": "solerys", "nom": "ATR (atelier conseil)", "etapes": [4, 5], "nature": "prepa", "desc": "Ateliers thématiques (optimisation CV, création d'entreprise), 0,5 à 1 jour.", "incertain": false, "relais": false, "ordre": 7, "id": "d08"}, {"structure": "solerys", "nom": "Défi emploi santé", "etapes": [2], "nature": "freins", "desc": "Identification des difficultés de santé qui freinent le retour à l'emploi.", "incertain": true, "relais": false, "ordre": 8, "id": "d09"}, {"structure": "pij", "nom": "Job d'été forum", "etapes": [5], "nature": "evenement", "desc": "", "incertain": false, "relais": false, "ordre": 9, "id": "d10"}, {"structure": "pij", "nom": "Accueil des pros, outilthèque", "etapes": [], "nature": "outils", "desc": "Mise à disposition d'outils pour les professionnels, ateliers.", "incertain": false, "relais": false, "ordre": 10, "id": "d11"}, {"structure": "pij", "nom": "TRE / EMI", "etapes": [2, 4], "nature": "prepa", "desc": "Techniques de recherche d'emploi, éducation aux médias et à l'information. Ateliers pour classes ou groupes.", "incertain": false, "relais": false, "ordre": 11, "id": "d12"}, {"structure": "campus", "nom": "Accueil et orientation des publics", "etapes": [1, 2], "nature": "accueil", "desc": "Événements emploi, formation, jeunesse, QPV ; sessions d'info ; rendez-vous individuels.", "incertain": false, "relais": false, "ordre": 12, "id": "d13"}, {"structure": "campus", "nom": "Accompagnement personnalisé", "etapes": [3], "nature": "accompagnement", "desc": "Rendez-vous réguliers sur la progression en formation et le volet professionnel ; mentorat Proxité, stage immersion (CCI).", "incertain": true, "relais": false, "ordre": 13, "id": "d14"}, {"structure": "campus", "nom": "Apprentissage collectif", "etapes": [4], "nature": "formation", "desc": "Ateliers méthodes, orientation pro, projets, mise en réseau.", "incertain": true, "relais": false, "ordre": 14, "id": "d15"}, {"structure": "plateforme", "nom": "100 Chances 100 Emplois", "etapes": [5], "nature": "mentorat", "desc": "1 semaine de coaching et mise en réseau. Même dispositif que celui porté par 100C100E.", "incertain": false, "relais": true, "ordre": 15, "id": "d16"}, {"structure": "plateforme", "nom": "Forum emploi 333", "etapes": [5], "nature": "evenement", "desc": "Job dating.", "incertain": false, "relais": false, "ordre": 16, "id": "d17"}, {"structure": "plateforme", "nom": "E2C", "etapes": [2], "nature": "formation", "desc": "Alternance : 2 semaines de formation, 2 semaines de découverte métier, stage.", "incertain": true, "relais": false, "ordre": 17, "id": "d18"}, {"structure": "ft", "nom": "Avenir Pro", "etapes": [2, 4, 5], "nature": "accueil", "desc": "Ateliers d'information sur le marché du travail au sein des lycées pro.", "incertain": false, "relais": false, "ordre": 18, "id": "d19"}, {"structure": "ft", "nom": "AIJ / CEJ / AI", "etapes": [2, 4, 5, 6], "nature": "accompagnement", "desc": "Accompagnement intensif sur la recherche d'emploi, définition et réalisation d'un projet pro.", "incertain": false, "relais": false, "ordre": 19, "id": "d20"}, {"structure": "lycee", "nom": "Apprentissage possible en entreprise (GRETA)", "etapes": [4], "nature": "formation", "desc": "Propose aux élèves des offres d'apprentissage pour se former en alternance au lycée.", "incertain": false, "relais": false, "ordre": 20, "id": "d21"}, {"structure": "lycee", "nom": "Avenir Pro + (avec la mission locale)", "etapes": [5], "nature": "accompagnement", "desc": "Accompagnement des jeunes sortis de formation sans solution, volontaires.", "incertain": false, "relais": false, "ordre": 21, "id": "d22"}, {"structure": "grafton", "nom": "100 Chances", "etapes": [5, 6], "nature": "mentorat", "desc": "1 semaine de coaching, simulation d'entretiens, solutions pro, partage de réseaux. Même dispositif que celui porté par 100C100E.", "incertain": false, "relais": true, "ordre": 22, "id": "d23"}, {"structure": "romans", "nom": "Chantier jeunes", "etapes": [2, 4], "nature": "immersion", "desc": "Remise à l'étrier pour jeunes en décrochage, stage, immersion pro, levée des freins comportementaux.", "incertain": false, "relais": false, "ordre": 23, "id": "d24"}, {"structure": "romans", "nom": "Aller-vers et mise en lien", "etapes": [1], "nature": "reperage", "desc": "Identification des besoins, repérage des jeunes éloignés, mise en relation avec les partenaires de droit commun.", "incertain": true, "relais": false, "ordre": 24, "id": "d25"}, {"structure": "romans", "nom": "Aides à l'autonomie", "etapes": [3], "nature": "freins", "desc": "Aide au permis de conduire, BAFA.", "incertain": true, "relais": false, "ordre": 25, "id": "d26"}, {"structure": "ml", "nom": "Contrat d'engagement jeune", "etapes": [4, 5, 6], "nature": "accompagnement", "desc": "Dispositif d'État d'accompagnement.", "incertain": false, "relais": false, "ordre": 26, "id": "d27"}, {"structure": "ml", "nom": "PAO", "etapes": [2, 4, 5, 6], "nature": "accompagnement", "desc": "Dispositif d'accompagnement.", "incertain": false, "relais": false, "ordre": 27, "id": "d28"}, {"structure": "ml", "nom": "PACEA", "etapes": [2, 3], "nature": "accompagnement", "desc": "Dispositif d'accompagnement.", "incertain": true, "relais": false, "ordre": 28, "id": "d29"}, {"structure": "blv", "nom": "Salon de l'alternance, de l'apprentissage et de l'emploi", "etapes": [1, 2, 5], "nature": "evenement", "desc": "Met en relation les structures d'accueil, les centres de formation et les jeunes à la recherche de leur voie.", "incertain": false, "relais": false, "ordre": 29, "id": "d30"}, {"structure": "blv", "nom": "Permanences avec des prestataires", "etapes": [2, 5], "nature": "accueil", "desc": "", "incertain": false, "relais": false, "ordre": 30, "id": "d31"}, {"structure": "prev", "nom": "Prévention spécialisée", "etapes": [1], "nature": "reperage", "desc": "Repérage et aller-vers.", "incertain": false, "relais": false, "ordre": 31, "id": "d32"}, {"structure": "prev", "nom": "File active (chantier)", "etapes": [1, 2], "nature": "immersion", "desc": "Chantier de 3 semaines pour les 16 à 20 ans.", "incertain": false, "relais": false, "ordre": 32, "id": "d33"}, {"structure": "prev", "nom": "Matinale de l'emploi", "etapes": [1, 2], "nature": "evenement", "desc": "Faciliter les liens.", "incertain": true, "relais": false, "ordre": 33, "id": "d34"}], "natures": [{"id": "reperage", "label": "Repérage et aller-vers"}, {"id": "accueil", "label": "Accueil, information, orientation"}, {"id": "prepa", "label": "Préparation à la recherche d'emploi"}, {"id": "evenement", "label": "Événements de mise en relation"}, {"id": "mentorat", "label": "Mentorat, parrainage, coaching"}, {"id": "immersion", "label": "Immersion, stage, chantier"}, {"id": "formation", "label": "Formation, alternance"}, {"id": "accompagnement", "label": "Accompagnement individuel renforcé"}, {"id": "freins", "label": "Levée des freins"}, {"id": "financement", "label": "Financement de dispositifs"}, {"id": "outils", "label": "Outils pour les professionnels"}], "etapes": ["Repérage et aller-vers", "Accueil, diagnostic et orientation", "Levée des freins", "Formation et montée en compétences", "Mise en relation avec l'emploi", "Intégration et maintien dans l'emploi"], "meta": {"titre": "Cartographie de l'accompagnement des jeunes", "sousTitre": "Valence-Romans, état des lieux déclaratif issu du séminaire du 3 novembre 2026", "generiques": ["Entreprises du territoire", "Établissements scolaires", "Structures de formation", "Associations", "Assistantes sociales"]}}</script>
+<script>
+(function(){
+var $=function(s,r){return (r||document).querySelector(s)};
+var esc=function(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var S={structures:[],dispositifs:[],natures:[],etapes:[],meta:{},view:'couvertures',mode:'gantt',selS:null,sel:null,filter:'',canWrite:false,draft:false,msg:'',loaded:{},err:'',nodeSel:null,showCited:true,showGen:true,minCit:1};
+var db=null,downloads=true,timers={},PRISTINE='',BASE='',KEY='carto-brouillon-v1';
+
+/* ---------- données ---------- */
+var DEF_ET=['Repérage et aller-vers','Accueil, diagnostic et orientation','Levée des freins','Formation et montée en compétences','Mise en relation avec l\'emploi','Intégration et maintien dans l\'emploi'];
+function etapes(){return (S.etapes&&S.etapes.length)?S.etapes:DEF_ET}
+function structById(id){for(var i=0;i<S.structures.length;i++)if(S.structures[i].id===id)return S.structures[i]}
+function structByNom(n){for(var i=0;i<S.structures.length;i++)if(S.structures[i].nom===n)return S.structures[i]}
+function natLabel(id){for(var i=0;i<S.natures.length;i++)if(S.natures[i].id===id)return S.natures[i].label;return id||'Non classé'}
+function disposOf(sid){return S.dispositifs.filter(function(d){return d.structure===sid})}
+
+function buildGraph(){
+  var nodes={},links=[],seen={};
+  S.structures.forEach(function(s){nodes[s.nom]={id:s.nom,fiche:true,sid:s.id,cit:0,court:s.court||s.nom}});
+  S.structures.forEach(function(s){(s.liens||[]).forEach(function(l){
+    l=(l||'').trim(); if(!l||l===s.nom)return;
+    if(!nodes[l])nodes[l]={id:l,fiche:false,cit:0,court:l};
+    nodes[l].cit++;
+    var k=[s.nom,l].sort().join('||');
+    if(seen[k]){seen[k].rec=true;seen[k].both=seen[k].both||(nodes[l].fiche)}
+    else{seen[k]={source:s.nom,target:l,rec:false};links.push(seen[k])}
+  })});
+  return {nodes:Object.keys(nodes).map(function(k){return nodes[k]}),links:links};
+}
+
+/* ---------- rendu commun ---------- */
+function kpis(){
+  var n=S.structures.length,d=S.dispositifs.filter(function(x){return !x.relais}).length,r=S.dispositifs.length-d;
+  var g=buildGraph(),cited=g.nodes.filter(function(x){return !x.fiche}).length;
+  $('#kpis').innerHTML=[[n,'structures avec fiche'],[d,'dispositifs distincts'+(r?' ('+r+' relayés)':'')],[cited,'structures citées sans fiche'],[g.links.length,'liens déclarés']]
+    .map(function(k){return '<div class="kpi"><b>'+k[0]+'</b><span>'+k[1]+'</span></div>'}).join('');
+  if(S.meta.titre)$('#ttl').textContent=S.meta.titre;
+  if(S.meta.sousTitre)$('#sub').textContent=S.meta.sousTitre;
+}
+function status(){
+  var el=$('#status'),h='';
+  if(S.err)h='<div class="warnbar">'+esc(S.err)+'</div>';
+  if(S.msg)h+='<div class="note">'+esc(S.msg)+'</div>';
+  if(S.canWrite&&S.draft)h+='<div class="warnbar">Modifications non publiées, enregistrées seulement dans ce navigateur. Pour les publier : « Télécharger la page à jour », puis remplacer le fichier index.html sur GitHub. <button class="btn sm" id="rst-btn">Revenir à la version publiée</button></div>';
+  el.innerHTML=h;
+}
+function render(){
+  document.querySelectorAll('.tab').forEach(function(t){t.setAttribute('aria-selected',t.dataset.v===S.view)});
+  kpis();status();
+  $('#exp-csv').hidden=$('#exp-json').hidden=!downloads;
+  $('#imp-btn').hidden=$('#pub-btn').hidden=!S.canWrite;
+  if(!S.structures.length&&!S.dispositifs.length){
+    $('#main').innerHTML='<div class="empty"><b>Aucune donnée pour l\'instant.</b><br>Importe le modèle Excel pour charger les structures et les dispositifs.'+(S.loaded.timeout?'<br>La connexion aux données semble lente. Les données peuvent être indisponibles pour le moment.':'')+'</div>';
+    return;
+  }
+  if(S.view==='couvertures')viewCouv();
+  else if(S.view==='reseau')viewNet();
+  else viewEdit();
+}
+
+/* ---------- vue couvertures ---------- */
+function chip(d){
+  var s=structById(d.structure),cls='chip'+(d.incertain?' inc':'')+(d.relais?' rel':'')+(S.sel===d.id?' sel':'');
+  if(S.filter&&d.structure!==S.filter)cls+=' dim';
+  return '<button class="'+cls+'" data-d="'+esc(d.id)+'"><b>'+esc(s?s.court||s.nom:'?')+'</b> '+esc(d.nom)+'</button>';
+}
+function viewCouv(){
+  var E=etapes(),h='';
+  h+='<div class="bar"><div class="seg" role="group" aria-label="Lecture">'
+    +'<button data-mode="gantt" aria-pressed="'+(S.mode==='gantt')+'">Parcours par structure</button>'
+    +'<button data-mode="nature" aria-pressed="'+(S.mode==='nature')+'">Recoupements par nature d\'action</button></div></div>';
+  h+='<div class="note">État des lieux déclaratif, à compléter. '+(S.mode==='gantt'?'Chaque barre montre les étapes du parcours où la structure dit intervenir. Clique sur une barre pour voir ses dispositifs. ':'Chaque case compte les dispositifs déclarés. ')+'Un vide veut dire « rien déclaré dans les fiches », pas « manque avéré ». Les structures absentes de la salle n\'y figurent pas.</div>';
+  if(S.mode==='nature')h+=matrixNature(E);else h+=gantt(E);
+  h+='<div class="dbar" id="detail">'+detail()+'</div>';
+  $('#main').innerHTML=h;
+}
+function cellClass(n){return n===0?'e0':n===1?'e1':n===2?'e2':'e3'}
+function matrixNature(E){
+  var cols=E.map(function(_,i){return i+1}).concat([0]);
+  var h='<div class="legend"><span><i style="background:var(--d1)"></i>1 dispositif</span><span><i style="background:var(--d2)"></i>2</span><span><i style="background:var(--d3)"></i>3 ou plus</span><span><i style="background:repeating-linear-gradient(135deg,transparent 0 3px,var(--d2) 3px 4px)"></i>rien déclaré</span><span>Trait pointillé : étape ou nature à vérifier</span><span>Hachuré : même dispositif relayé par une autre structure (non compté)</span></div>';
+  h+='<div class="scroll"><table class="m"><thead><tr><th>Nature de l\'action</th>';
+  E.forEach(function(e,i){h+='<th><small>Étape '+(i+1)+'</small>'+esc(e)+'</th>'});
+  h+='<th><small>Hors parcours</small>Transversal</th></tr></thead><tbody>';
+  var rows=S.natures.slice(); if(S.dispositifs.some(function(d){return !natLabelKnown(d.nature)}))rows.push({id:'',label:'Non classé'});
+  rows.forEach(function(n){
+    h+='<tr><th scope="row">'+esc(n.label)+'</th>';
+    cols.forEach(function(c){
+      var ds=S.dispositifs.filter(function(d){
+        var inNat=(d.nature||'')===n.id||(n.id===''&&!natLabelKnown(d.nature));
+        if(!inNat)return false;
+        return c===0?(!d.etapes||d.etapes.length===0):(d.etapes||[]).indexOf(c)>=0});
+      var cnt=ds.filter(function(d){return !d.relais}).length;
+      h+='<td class="c '+cellClass(cnt)+'">'+(cnt?'<span class="cnt">'+cnt+'</span>':'')+'<div class="chips">'+ds.map(chip).join('')+'</div></td>';
+    });
+    h+='</tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+function natLabelKnown(id){return S.natures.some(function(n){return n.id===id})}
+function gantt(E){
+  var first=function(x){return (x.etapes&&x.etapes.length)?Math.min.apply(null,x.etapes):9};
+  var rows=S.structures.slice().sort(function(a,b){return first(a)-first(b)||(b.etapes||[]).length-(a.etapes||[]).length||(a.ordre||0)-(b.ordre||0)});
+  var h='<div class="legend"><span><i class="lg1"></i>étape où la structure intervient, avec dispositif déclaré</span><span><i class="lg2"></i>étape cochée dans la fiche, sans dispositif déclaré</span><span><span class="sq warnsq">!</span> dispositif déclaré sur une étape non cochée</span></div>';
+  h+='<div class="scroll"><div class="gantt"><div class="gh">Structure</div>';
+  E.forEach(function(e,i){h+='<div class="gh"><small>Étape '+(i+1)+'</small>'+esc(e)+'</div>'});
+  var tot=E.map(function(){return 0});
+  rows.forEach(function(s){
+    var ds=disposOf(s.id),et=s.etapes||[];
+    h+='<button class="gb gname'+(S.selS===s.id?' sel':'')+'" data-s="'+esc(s.id)+'">'+esc(s.nom)+'</button>';
+    E.forEach(function(_,i){
+      var n=i+1,on=et.indexOf(n)>=0,c=ds.filter(function(d){return (d.etapes||[]).indexOf(n)>=0}).length;
+      if(on)tot[i]++;
+      var inner='';
+      if(on){var ls=et.indexOf(n-1)<0,rs=et.indexOf(n+1)<0;
+        inner='<span class="gbar'+(c?'':' nd')+(ls?' ls':'')+(rs?' rs':'')+'">'+(c||'')+'</span>';}
+      else if(c)inner='<span class="sq warnsq" style="margin:auto" title="Dispositif numéroté sur une étape non cochée">!</span>';
+      h+='<button class="gb gcell" data-s="'+esc(s.id)+'" aria-label="'+esc(s.nom)+', étape '+n+'">'+inner+'</button>';
+    });
+  });
+  h+='<div class="gname" style="cursor:default;background:var(--bg)">Structures présentes</div>'+tot.map(function(t){return '<div class="gcell" style="justify-content:center;background:var(--bg);font-weight:800;color:var(--navy)">'+t+'</div>'}).join('');
+  return h+'</div></div>';
+}
+function matrixStruct(E){
+  var h='<div class="legend"><span><span class="sq tick">2</span> étape cochée dans la fiche, avec n dispositifs numérotés</span><span><span class="sq hollow">0</span> cochée, aucun dispositif ne la nomme</span><span><span class="sq warnsq">!</span> un dispositif la nomme, mais elle n\'est pas cochée</span></div>';
+  h+='<div class="scroll"><table class="m"><thead><tr><th>Structure</th>';
+  E.forEach(function(e,i){h+='<th><small>Étape '+(i+1)+'</small>'+esc(e)+'</th>'});
+  h+='</tr></thead><tbody>';
+  var tot=E.map(function(){return 0});
+  S.structures.slice().sort(function(a,b){return (a.ordre||0)-(b.ordre||0)}).forEach(function(s){
+    var ds=disposOf(s.id);
+    h+='<tr'+(S.filter&&S.filter!==s.id?' style="opacity:.3"':'')+'><th scope="row">'+esc(s.nom)+'</th>';
+    E.forEach(function(_,i){
+      var n=i+1,on=(s.etapes||[]).indexOf(n)>=0,c=ds.filter(function(d){return (d.etapes||[]).indexOf(n)>=0});
+      if(on)tot[i]++;
+      var inner='';
+      if(on)inner='<span class="sq '+(c.length?'tick':'hollow')+'">'+c.length+'</span>';
+      else if(c.length)inner='<span class="sq warnsq" title="Dispositif numéroté sur une étape non cochée">!</span>';
+      h+='<td class="c" style="height:auto">'+inner+(c.length?'<div class="chips">'+c.map(chip).join('')+'</div>':'')+'</td>';
+    });
+    h+='</tr>';
+  });
+  h+='<tr><th scope="row">Structures intervenant</th>'+tot.map(function(t){return '<td class="c" style="height:auto"><span class="cnt">'+t+'</span></td>'}).join('')+'</tr>';
+  return h+'</tbody></table></div>';
+}
+function detailStruct(){
+  var s=structById(S.selS);
+  if(!s)return '<h3>Détail</h3><p class="ro">Clique sur une barre ou sur le nom d\'une structure pour voir ses dispositifs.</p>';
+  var E=etapes(),ds=disposOf(s.id);
+  return '<div class="blk"><h3>'+esc(s.nom)+'</h3><p class="ro">'+esc(s.role||'')+'</p>'
+   +'<p class="ro">Étapes : '+((s.etapes||[]).length?s.etapes.map(function(n){return n+'. '+esc(E[n-1]||'')}).join(' ; '):'aucune cochée')+'</p>'
+   +'<h3>'+ds.length+' dispositif'+(ds.length>1?'s':'')+'</h3>'
+   +(ds.length?ds.map(function(d){return '<p><b>'+esc(d.nom)+'</b> <span class="tag">'+((d.etapes||[]).length?'étape'+(d.etapes.length>1?'s':'')+' '+d.etapes.join(', '):'hors parcours')+'</span>'+(d.relais?'<span class="tag">relayé</span>':'')+(d.incertain?'<span class="tag w">à vérifier</span>':'')+(d.desc?'<br><span class="ro">'+esc(d.desc)+'</span>':'')+'</p>'}).join(''):'<p class="ro">Aucun dispositif déclaré dans la fiche.</p>')
+   +'</div>';
+}
+function detail(){
+  if(S.mode==='gantt')return detailStruct();
+  var d=S.dispositifs.filter(function(x){return x.id===S.sel})[0];
+  if(!d)return '<h3>Détail</h3><p class="ro">Clique sur un dispositif pour voir sa fiche.</p>';
+  var s=structById(d.structure),E=etapes();
+  return '<h3>'+esc(d.nom)+'</h3><p><b>'+esc(s?s.nom:'')+'</b></p>'
+   +'<p>'+(d.relais?'<span class="tag">relayé</span>':'')+(d.incertain?'<span class="tag w">à vérifier</span>':'')+'<span class="tag">'+esc(natLabel(d.nature))+'</span></p>'
+   +'<p class="ro">Étapes : '+((d.etapes||[]).length?d.etapes.map(function(n){return n+'. '+esc(E[n-1]||'')}).join(' ; '):'aucune numérotée')+'</p>'
+   +(d.desc?'<p>'+esc(d.desc)+'</p>':'<p class="ro">Pas de description dans la fiche.</p>');
+}
+
+/* ---------- vue réseau ---------- */
+var sim=null;
+function viewNet(){
+  var h='<div class="bar"><label class="ro"><input type="checkbox" id="oc"'+(S.showCited?' checked':'')+'> Structures citées sans fiche</label>'
+   +'<label class="ro"><input type="checkbox" id="og"'+(S.showGen?' checked':'')+'> Acteurs génériques (entreprises, établissements…)</label>'
+   +'<label class="ro">Cité au moins <select id="mc">'+[1,2,3,4].map(function(n){return '<option value="'+n+'"'+(S.minCit===n?' selected':'')+'>'+n+' fois</option>'}).join('')+'</select></label></div>';
+  h+='<div class="note">Les liens viennent du champ « structures en lien » de chaque fiche : c\'est ce que chacun déclare, pas une mesure de collaboration réelle. Un trait épais marque un lien déclaré des deux côtés. Les ronds pleins ont une fiche, les ronds creux sont cités par d\'autres sans avoir répondu.</div>';
+  h+='<div class="layout" style="margin-top:12px"><div><div id="netwrap"><svg id="net" viewBox="0 0 1000 680" role="img" aria-label="Réseau des structures et de leurs liens déclarés"></svg></div>'
+   +'<div class="legend"><span><i style="background:var(--navy);border-radius:50%"></i>avec fiche</span><span><i style="border:2px dashed var(--navy);border-radius:50%"></i>citée sans fiche</span><span>Taille : nombre de structures qui la citent</span></div></div>'
+   +'<aside class="panel" id="ndetail"></aside></div>';
+  $('#main').innerHTML=h;
+  drawNet();ndetail();
+}
+function drawNet(){
+  if(sim){sim.stop();sim=null}
+  var g=buildGraph(),gen=S.meta.generiques||[];
+  var nodes=g.nodes.filter(function(n){
+    if(n.fiche)return true;
+    if(!S.showCited)return false;
+    if(!S.showGen&&gen.indexOf(n.id)>=0)return false;
+    return n.cit>=S.minCit});
+  var ids={};nodes.forEach(function(n){ids[n.id]=1});
+  var links=g.links.filter(function(l){return ids[l.source]&&ids[l.target]}).map(function(l){return {source:l.source,target:l.target,rec:l.rec}});
+  var svg=d3.select('#net');svg.selectAll('*').remove();
+  var W=1000,H=680;
+  var r=function(n){return 7+Math.sqrt(n.cit)*4.2};
+  var lk=svg.append('g').selectAll('line').data(links).enter().append('line').attr('class',function(l){return 'link'+(l.rec?' rec':'')}).attr('stroke-width',function(l){return l.rec?2.4:1});
+  var nd=svg.append('g').selectAll('g').data(nodes).enter().append('g').attr('class','node').attr('tabindex',0)
+    .on('click',function(e,n){S.nodeSel=n.id;highlight();ndetail()})
+    .on('keydown',function(e,n){if(e.key==='Enter'){S.nodeSel=n.id;highlight();ndetail()}});
+  nd.append('circle').attr('r',r).attr('fill',function(n){return n.fiche?'var(--navy)':'var(--surface)'}).attr('stroke','var(--navy)').attr('stroke-width',2).attr('stroke-dasharray',function(n){return n.fiche?null:'3 2'});
+  nd.append('text').attr('dy',function(n){return -r(n)-4}).attr('text-anchor','middle').text(function(n){return n.court});
+  sim=d3.forceSimulation(nodes).force('link',d3.forceLink(links).id(function(n){return n.id}).distance(95).strength(.4))
+    .force('charge',d3.forceManyBody().strength(-520)).force('center',d3.forceCenter(W/2,H/2))
+    .force('col',d3.forceCollide().radius(function(n){return r(n)+22}))
+    .force('x',d3.forceX(W/2).strength(.05)).force('y',d3.forceY(H/2).strength(.07));
+  sim.on('tick',function(){
+    nodes.forEach(function(n){n.x=Math.max(70,Math.min(W-70,n.x));n.y=Math.max(40,Math.min(H-30,n.y))});
+    lk.attr('x1',function(l){return l.source.x}).attr('y1',function(l){return l.source.y}).attr('x2',function(l){return l.target.x}).attr('y2',function(l){return l.target.y});
+    nd.attr('transform',function(n){return 'translate('+n.x+','+n.y+')'});
+  });
+  nd.call(d3.drag().on('start',function(e,n){if(!e.active)sim.alphaTarget(.3).restart();n.fx=n.x;n.fy=n.y})
+    .on('drag',function(e,n){n.fx=e.x;n.fy=e.y}).on('end',function(e,n){if(!e.active)sim.alphaTarget(0);n.fx=null;n.fy=null}));
+  S._nd=nd;S._lk=lk;S._links=links;highlight();
+}
+function highlight(){
+  if(!S._nd)return;
+  var s=S.nodeSel,nb={};
+  if(s){nb[s]=1;S._links.forEach(function(l){var a=l.source.id,b=l.target.id;if(a===s)nb[b]=1;if(b===s)nb[a]=1})}
+  S._nd.classed('dimmed',function(n){return s&&!nb[n.id]});
+  S._lk.classed('dimmed',function(l){return s&&l.source.id!==s&&l.target.id!==s});
+}
+function ndetail(){
+  var el=$('#ndetail');if(!el)return;
+  var g=buildGraph(),top=g.nodes.slice().sort(function(a,b){return b.cit-a.cit}).slice(0,8);
+  if(!S.nodeSel){
+    el.innerHTML='<h3>Les plus cités</h3>'+top.map(function(n){return '<p><b>'+n.cit+'</b> '+esc(n.id)+(n.fiche?'':' <span class="tag">sans fiche</span>')+'</p>'}).join('')+'<p class="ro">Clique sur un rond pour voir ses liens.</p>';return}
+  var n=g.nodes.filter(function(x){return x.id===S.nodeSel})[0];if(!n){S.nodeSel=null;return ndetail()}
+  var st=structByNom(n.id),out=st?(st.liens||[]):[],inn=S.structures.filter(function(s){return (s.liens||[]).indexOf(n.id)>=0}).map(function(s){return s.nom});
+  var ds=st?disposOf(st.id):[];
+  el.innerHTML='<h3>'+esc(n.id)+'</h3><p>'+(st?'<span class="tag">avec fiche</span>':'<span class="tag w">sans fiche</span>')+'</p>'
+   +(st?'<p class="ro">'+esc(st.role||'')+'</p>':'')
+   +'<h3>Cité par ('+inn.length+')</h3><p>'+(inn.map(esc).join(', ')||'Personne')+'</p>'
+   +(st?'<h3>Cite ('+out.length+')</h3><p>'+(out.map(esc).join(', ')||'Rien')+'</p><h3>Dispositifs ('+ds.length+')</h3><p>'+(ds.map(function(d){return esc(d.nom)}).join(', ')||'Aucun')+'</p>':'')
+   +'<p><button class="btn sm" id="nclr">Tout afficher</button></p>';
+}
+
+/* ---------- vue données (édition) ---------- */
+function snapshot(){return {structures:S.structures,dispositifs:S.dispositifs,natures:S.natures,etapes:etapes(),meta:S.meta}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify({base:BASE,data:snapshot()}))}catch(e){}S.draft=true;status()}
+function put(col,id,obj){clearTimeout(timers.p);timers.p=setTimeout(persist,300)}
+function uid(p){return p+Math.random().toString(36).slice(2,7)}
+function etChk(list,cls,idx){
+  return '<div class="chk">'+etapes().map(function(e,i){return '<label title="'+esc(e)+'"><input type="checkbox" class="'+cls+'" data-i="'+idx+'" data-n="'+(i+1)+'"'+((list||[]).indexOf(i+1)>=0?' checked':'')+'>'+(i+1)+'</label>'}).join('')+'</div>';
+}
+function viewEdit(){
+  var dis=S.canWrite?'':' disabled';
+  var h=(S.canWrite?'<div class="cards"><div class="card"><label class="f">Titre de la carte<input type="text" class="m-ttl" value="'+esc(S.meta.titre||'')+'"></label><label class="f">Sous-titre (territoire, date)<input type="text" class="m-sub" value="'+esc(S.meta.sousTitre||'')+'"></label></div></div>':'')+'<div class="note">'+(S.canWrite?'Tu peux tout modifier ici. Chaque champ s\'enregistre dans ce navigateur, et les deux autres vues se mettent à jour. Pour publier, utilise « Télécharger la page à jour ». Pour qu\'un lien du réseau rejoigne une structure qui a une fiche, écris son nom exactement comme dans le champ « Nom ».':'Lecture seule : les modifications sont réservées aux personnes qui ont les droits d\'édition.')+'</div>';
+  h+='<div class="sec"><h2>Structures et leurs liens</h2>'+(S.canWrite?'<button class="btn pri" id="add-s">Ajouter une structure</button>':'')+'</div><div class="cards">';
+  S.structures.slice().sort(function(a,b){return (a.ordre||0)-(b.ordre||0)}).forEach(function(s,i){
+    h+='<div class="card" data-s="'+esc(s.id)+'">'
+     +'<label class="f">Nom<input type="text" class="s-nom" value="'+esc(s.nom)+'"'+dis+'></label>'
+     +'<label class="f">Nom court (cartes)<input type="text" class="s-court" value="'+esc(s.court||'')+'"'+dis+'></label>'
+     +'<label class="f">Rôle principal<textarea class="s-role"'+dis+' style="min-height:56px">'+esc(s.role||'')+'</textarea></label>'
+     +'<div class="f" style="font-size:11.5px;font-weight:600;color:var(--muted)">Étapes cochées dans la fiche'+etChk(s.etapes,'s-et',s.id).replace(/<input /g,'<input'+dis+' ')+'</div>'
+     +'<label class="f">Structures en lien (une par ligne)<textarea class="s-liens"'+dis+'>'+esc((s.liens||[]).join('\n'))+'</textarea></label>'
+     +(S.canWrite?'<div><button class="btn sm s-del">Supprimer cette structure</button></div>':'')+'</div>';
+  });
+  h+='</div>';
+  h+='<div class="sec"><h2>Dispositifs et actions</h2>'+(S.canWrite?'<button class="btn pri" id="add-d">Ajouter un dispositif</button>':'')+'</div>';
+  h+='<div class="scroll"><table class="dt"><thead><tr><th>Structure</th><th>Dispositif</th><th>Étapes</th><th>Nature d\'action</th><th>Description</th><th>Statut</th><th></th></tr></thead><tbody>';
+  S.dispositifs.slice().sort(function(a,b){return (a.ordre||0)-(b.ordre||0)}).forEach(function(d){
+    h+='<tr data-d="'+esc(d.id)+'"><td><select class="d-str"'+dis+'>'+S.structures.map(function(s){return '<option value="'+esc(s.id)+'"'+(s.id===d.structure?' selected':'')+'>'+esc(s.court||s.nom)+'</option>'}).join('')+'</select></td>'
+     +'<td><input type="text" class="d-nom" value="'+esc(d.nom)+'"'+dis+'></td>'
+     +'<td>'+etChk(d.etapes,'d-et',d.id).replace(/<input /g,'<input'+dis+' ')+'</td>'
+     +'<td><select class="d-nat"'+dis+'>'+S.natures.map(function(n){return '<option value="'+esc(n.id)+'"'+(n.id===d.nature?' selected':'')+'>'+esc(n.label)+'</option>'}).join('')+'</select></td>'
+     +'<td><textarea class="d-desc"'+dis+'>'+esc(d.desc||'')+'</textarea></td>'
+     +'<td><label class="ro"><input type="checkbox" class="d-inc"'+(d.incertain?' checked':'')+dis+'> à vérifier</label><br><label class="ro"><input type="checkbox" class="d-rel"'+(d.relais?' checked':'')+dis+'> relayé</label></td>'
+     +'<td>'+(S.canWrite?'<button class="btn sm d-del" title="Supprimer">Suppr.</button>':'')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<div class="sec"><h2>Natures d\'action (lignes de la carte)</h2>'+(S.canWrite?'<button class="btn pri" id="add-n">Ajouter une nature</button>':'')+'</div><div class="cards">';
+  S.natures.forEach(function(n,i){
+    var used=S.dispositifs.filter(function(d){return d.nature===n.id}).length;
+    h+='<div class="card" data-n="'+i+'"><label class="f">Libellé<input type="text" class="n-lab" value="'+esc(n.label)+'"'+dis+'></label><span class="ro">'+used+' dispositif'+(used>1?'s':'')+'</span>'+(S.canWrite&&!used?'<div><button class="btn sm n-del">Supprimer</button></div>':'')+'</div>';
+  });
+  h+='</div>';
+  h+='<div class="sec"><h2>Étapes du parcours (colonnes de la carte)</h2></div><div class="cards"><div class="card">'+etapes().map(function(e,i){return '<label class="f">Étape '+(i+1)+'<input type="text" class="e-lab" data-i="'+i+'" value="'+esc(e)+'"'+dis+'></label>'}).join('')+'</div></div>';
+  $('#main').innerHTML=h;
+}
+function putCfg(id,obj){put('config',id,obj)}
+
+/* ---------- événements ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('button,[data-v]');if(!t)return;
+  if(t.classList.contains('tab')){S.view=t.dataset.v;try{location.hash=S.view}catch(x){}render();return}
+  if(t.dataset&&t.dataset.mode){S.mode=t.dataset.mode;render();return}
+  if(t.dataset&&t.dataset.d&&t.classList.contains('chip')){S.sel=t.dataset.d;document.querySelectorAll('.chip').forEach(function(c){c.classList.toggle('sel',c.dataset.d===S.sel)});var dd=$('#detail');if(dd)dd.innerHTML=detail();return}
+  if(t.classList.contains('gb')){S.selS=t.dataset.s;document.querySelectorAll('.gname').forEach(function(c){c.classList.toggle('sel',c.dataset.s===S.selS)});var dd=$('#detail');if(dd)dd.innerHTML=detail();return}
+  if(t.id==='nclr'){S.nodeSel=null;highlight();ndetail();return}
+  if(t.id==='imp-btn'){$('#imp-file').click();return}
+  if(t.id==='pub-btn')return publish();
+  if(t.id==='rst-btn')return resetDraft();
+  if(t.id==='exp-json')return exportJson();
+  if(t.id==='exp-csv')return exportCsv();
+  if(!S.canWrite)return;
+  if(t.id==='add-s'){var id=uid('s-'),o={nom:'Nouvelle structure',court:'Nouvelle',role:'',etapes:[],liens:[],ordre:S.structures.length};S.structures.push(Object.assign({id:id},o));put('structures',id,o);render();return}
+  if(t.id==='add-d'){var id=uid('d'),o={structure:(S.structures[0]||{}).id||'',nom:'Nouveau dispositif',etapes:[],nature:(S.natures[0]||{}).id||'',desc:'',incertain:true,relais:false,ordre:S.dispositifs.length};S.dispositifs.push(Object.assign({id:id},o));put('dispositifs',id,o);render();return}
+  if(t.id==='add-n'){S.natures.push({id:uid('n'),label:'Nouvelle nature'});putCfg('natures',{items:S.natures});render();return}
+  var c;
+  if(t.classList.contains('s-del')&&(c=t.closest('[data-s]'))){var id=c.dataset.s;S.structures=S.structures.filter(function(s){return s.id!==id});persist();render();return}
+  if(t.classList.contains('d-del')&&(c=t.closest('[data-d]'))){var id=c.dataset.d;S.dispositifs=S.dispositifs.filter(function(s){return s.id!==id});persist();render();return}
+  if(t.classList.contains('n-del')&&(c=t.closest('[data-n]'))){S.natures.splice(+c.dataset.n,1);putCfg('natures',{items:S.natures});render();return}
+});
+document.addEventListener('change',function(e){
+  var t=e.target;
+  if(t.id==='imp-file'){if(t.files&&t.files[0])importXlsx(t.files[0]);t.value='';return}
+  if(t.id==='flt'){S.filter=t.value;render();return}
+  if(t.id==='oc'){S.showCited=t.checked;drawNet();return}
+  if(t.id==='og'){S.showGen=t.checked;drawNet();return}
+  if(t.id==='mc'){S.minCit=+t.value;drawNet();return}
+  if(!S.canWrite||S.view!=='donnees')return;
+  var cs=t.closest('[data-s]'),cd=t.closest('[data-d]');
+  if(t.classList.contains('s-et')){var s=structById(t.dataset.i),n=+t.dataset.n,a=(s.etapes||[]).filter(function(x){return x!==n});if(t.checked)a.push(n);s.etapes=a.sort();put('structures',s.id,s);return}
+  if(t.classList.contains('d-et')){var d=S.dispositifs.filter(function(x){return x.id===t.dataset.i})[0],n=+t.dataset.n,a=(d.etapes||[]).filter(function(x){return x!==n});if(t.checked)a.push(n);d.etapes=a.sort();put('dispositifs',d.id,d);return}
+  if(cd){var d=S.dispositifs.filter(function(x){return x.id===cd.dataset.d})[0];
+    if(t.classList.contains('d-str'))d.structure=t.value;
+    if(t.classList.contains('d-nat'))d.nature=t.value;
+    if(t.classList.contains('d-inc'))d.incertain=t.checked;
+    if(t.classList.contains('d-rel'))d.relais=t.checked;
+    put('dispositifs',d.id,d)}
+});
+document.addEventListener('input',function(e){
+  var t=e.target;if(!S.canWrite||S.view!=='donnees')return;
+  var cs=t.closest('[data-s]'),cd=t.closest('[data-d]'),cn=t.closest('[data-n]');
+  if(t.classList.contains('m-ttl')){S.meta.titre=t.value;put();return}
+  if(t.classList.contains('m-sub')){S.meta.sousTitre=t.value;put();return}
+  if(cs){var s=structById(cs.dataset.s);
+    if(t.classList.contains('s-nom'))s.nom=t.value;
+    if(t.classList.contains('s-court'))s.court=t.value;
+    if(t.classList.contains('s-role'))s.role=t.value;
+    if(t.classList.contains('s-liens'))s.liens=t.value.split('\n').map(function(x){return x.trim()}).filter(Boolean);
+    put('structures',s.id,s);return}
+  if(cd){var d=S.dispositifs.filter(function(x){return x.id===cd.dataset.d})[0];
+    if(t.classList.contains('d-nom'))d.nom=t.value;
+    if(t.classList.contains('d-desc'))d.desc=t.value;
+    put('dispositifs',d.id,d);return}
+  if(cn&&t.classList.contains('n-lab')){S.natures[+cn.dataset.n].label=t.value;putCfg('natures',{items:S.natures});return}
+  if(t.classList.contains('e-lab')){var E=etapes().slice();E[+t.dataset.i]=t.value;S.etapes=E;putCfg('etapes',{items:E})}
+});
+window.addEventListener('hashchange',function(){var h=location.hash.replace('#','');if(['couvertures','reseau','donnees'].indexOf(h)>=0&&h!==S.view){S.view=h;render()}});
+
+/* ---------- export ---------- */
+function save(name,data,type){var b=new Blob([data],{type:type||'text/plain;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},500)}
+function exportJson(){save('cartographie.json',JSON.stringify(snapshot(),null,2),'application/json')}
+function exportCsv(){
+  var q=function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'};
+  var rows=[['Structure','Dispositif','Étapes','Nature','Description','À vérifier','Relayé']];
+  S.dispositifs.forEach(function(d){var s=structById(d.structure);rows.push([s?s.nom:'',d.nom,(d.etapes||[]).join(' / '),natLabel(d.nature),d.desc||'',d.incertain?'oui':'',d.relais?'oui':''])});
+  save('dispositifs.csv','﻿'+rows.map(function(r){return r.map(q).join(';')}).join('\n'));
+}
+
+/* ---------- import Excel, publication ---------- */
+function slug(s){return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'x'}
+function uniq(base,used){var id=base,n=2;while(used[id])id=base+'-'+(n++);used[id]=1;return id}
+function isX(v){return String(v==null?'':v).trim().toLowerCase()==='x'}
+function importXlsx(file){
+  S.err='';S.msg='';
+  file.arrayBuffer().then(function(buf){
+    var wb=XLSX.read(buf,{type:'array'}),ws=wb.Sheets['Structures'],wd=wb.Sheets['Dispositifs'],wn=wb.Sheets['Natures'];
+    if(!ws||!wd||!wn)throw new Error('Il faut les onglets Structures, Dispositifs et Natures. Utilise le modèle Excel fourni.');
+    var rs=XLSX.utils.sheet_to_json(ws,{header:1,defval:''}),rd=XLSX.utils.sheet_to_json(wd,{header:1,defval:''}),rn=XLSX.utils.sheet_to_json(wn,{header:1,defval:''});
+    var hdr=rs[0]||[],E=[];for(var k=3;k<=8;k++)E.push(String(hdr[k]||'').replace(/^\s*\d+\.\s*/,'').trim()||('Étape '+(k-2)));
+    var used={},ST=[],byNom={};
+    rs.slice(1).forEach(function(r){var nom=String(r[0]).trim();if(!nom)return;
+      var et=[];for(var k=1;k<=6;k++)if(isX(r[2+k]))et.push(k);
+      var s={id:uniq(slug(nom),used),nom:nom,court:String(r[1]).trim()||nom,role:String(r[2]).trim(),etapes:et,liens:String(r[9]).split(/[;\n]/).map(function(x){return x.trim()}).filter(Boolean),ordre:ST.length};
+      ST.push(s);byNom[nom]=s});
+    var un={},NA=[],byLab={};
+    rn.slice(1).forEach(function(r){var l=String(r[0]).trim();if(!l||byLab[l])return;var n={id:uniq(slug(l),un),label:l};NA.push(n);byLab[l]=n});
+    var ud={},DI=[],skipped=[],addedNat=[];
+    rd.slice(1).forEach(function(r,i){var nom=String(r[1]).trim();if(!nom&&!String(r[0]).trim())return;
+      var s=byNom[String(r[0]).trim()];if(!s){skipped.push(nom||('ligne '+(i+2)));return}
+      var lab=String(r[8]).trim(),n=byLab[lab];
+      if(!n&&lab){n={id:uniq(slug(lab),un),label:lab};NA.push(n);byLab[lab]=n;addedNat.push(lab)}
+      var et=[];for(var k=1;k<=6;k++)if(isX(r[1+k]))et.push(k);
+      DI.push({id:uniq('d-'+slug(nom).slice(0,24),ud),structure:s.id,nom:nom||'(sans nom)',etapes:et,nature:n?n.id:'',desc:String(r[9]).trim(),incertain:String(r[10]).trim().toLowerCase()==='oui',relais:String(r[11]).trim().toLowerCase()==='oui',ordre:DI.length})});
+    if(!ST.length)throw new Error('Aucune structure trouvée dans l\'onglet Structures.');
+    S.structures=ST;S.dispositifs=DI;S.natures=NA;S.etapes=E;
+    var m='Import terminé : '+ST.length+' structures, '+DI.length+' dispositifs.';
+    if(skipped.length)m+=' Ignorés (structure introuvable) : '+skipped.join(', ')+'.';
+    if(addedNat.length)m+=' Natures ajoutées : '+addedNat.join(', ')+'.';
+    S.msg=m;persist();render();
+  }).catch(function(e){S.err='Import impossible : '+(e&&e.message||e);render()});
+}
+function publish(){
+  var d=JSON.stringify(snapshot()).replace(/<\//g,'<\\/');
+  var html=PRISTINE.replace(/(<script id="carto-data" type="application\/json">)[\s\S]*?(<\/script>)/,function(_,a,b){return a+d+b});
+  save('index.html',html,'text/html;charset=utf-8');
+}
+function resetDraft(){try{localStorage.removeItem(KEY)}catch(e){}location.reload()}
+function hash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))|0;return String(h)}
+
+/* ---------- démarrage ---------- */
+var pending=false;
+function refresh(){
+  if(S.view==='donnees'){var a=document.activeElement;if(a&&a.closest&&a.closest('#main')&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)){pending=true;kpis();return}}
+  render();
+}
+document.addEventListener('focusout',function(){if(pending){pending=false;setTimeout(function(){var a=document.activeElement;if(!(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))render()},60)}});
+(function init(){
+  var h=location.hash.replace('#','');if(['couvertures','reseau','donnees'].indexOf(h)>=0)S.view=h;
+  var raw=document.getElementById('carto-data').textContent;
+  PRISTINE='<!doctype html>\n'+document.documentElement.outerHTML;
+  BASE=hash(raw);var D=JSON.parse(raw);
+  S.canWrite=/[?&]edit(=|&|$)/.test(location.search);
+  if(S.canWrite){try{var b=JSON.parse(localStorage.getItem(KEY)||'null');if(b&&b.base===BASE&&b.data){D=b.data;S.draft=true}}catch(e){}}
+  S.structures=D.structures||[];S.dispositifs=D.dispositifs||[];S.natures=D.natures||[];S.etapes=D.etapes||[];S.meta=D.meta||{};
+  render();
+})();
+})();
+</script>
+
+</html>
